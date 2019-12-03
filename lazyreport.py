@@ -22,8 +22,8 @@ def tencent_translation(englishtext):  #英翻汉翻译 腾讯每月500w免费�
         "Target":'zh',
     }
     payload['SourceText']=englishtext # 传入查询文本
-    secret_id = "你的腾讯secret_id"
-    secret_key = "你的腾讯secret_key"
+    secret_id = "AKID1pNfhTbDRP7YicNjw96mBKDqCHNv4CwP"
+    secret_key = "0jCPM3KQzIK5brrgOTSPF1jHZaR7iCdt"
 
     service = "tmt" #文本翻译url服务
     host = "tmt.tencentcloudapi.com" #文本翻译url请求地址
@@ -79,7 +79,7 @@ def tencent_translation(englishtext):  #英翻汉翻译 腾讯每月500w免费�
         "X-TC-Region":region
     }
     html=requests.post(url=endpoint,data=payload,headers=headers)
-    time.sleep(0.2)
+    time.sleep(0.3)
     try:
         return html.json()['Response']['TargetText']
     except:
@@ -89,10 +89,10 @@ def baidu_translation(englishtext): #英翻汉翻译 百度每月200w免费翻�
     translateurl='http://api.fanyi.baidu.com/api/trans/vip/translate' #通用翻译url请求地址
     payload={
         "q":'',
-        "key":'你的百度key',
+        "key":'efCw9wQrNbV6nGvvWGBy',
         "from":'en',
         "to":'zh',
-        "appid":'你的百度appid',
+        "appid":'201911060003536350',
         "salt":'135798642',
         "sign":''
     }
@@ -107,9 +107,12 @@ def baidu_translation(englishtext): #英翻汉翻译 百度每月200w免费翻�
 
 def auto_translation(englishtext): #自动选择翻译api
     chinesetext=tencent_translation(englishtext)
-    if chinesetext==False:       
-        chinesetext=tencent_translation(englishtext)
-    return chinesetext
+    if chinesetext!=False:
+        return chinesetext
+    chinesetext=baidu_translation(englishtext)
+    if chinesetext!=False:
+        return chinesetext
+    return englishtext
 
 def getnessus(initname): #得到nessus html扫描报告 模板数据
     htmltext=open(initname,'r',encoding='utf-8').read()
