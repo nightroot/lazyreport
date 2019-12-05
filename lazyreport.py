@@ -22,8 +22,8 @@ def tencent_translation(englishtext):  #英翻汉翻译 腾讯每月500w免费�
         "Target":'zh',
     }
     payload['SourceText']=englishtext # 传入查询文本
-    secret_id = "AKID1pNfhTbDRP7YicNjw96mBKDqCHNv4CwP"
-    secret_key = "0jCPM3KQzIK5brrgOTSPF1jHZaR7iCdt"
+    secret_id = "你的id"
+    secret_key = "你的密钥key"
 
     service = "tmt" #文本翻译url服务
     host = "tmt.tencentcloudapi.com" #文本翻译url请求地址
@@ -89,10 +89,10 @@ def baidu_translation(englishtext): #英翻汉翻译 百度每月200w免费翻�
     translateurl='http://api.fanyi.baidu.com/api/trans/vip/translate' #通用翻译url请求地址
     payload={
         "q":'',
-        "key":'efCw9wQrNbV6nGvvWGBy',
+        "key":'你的密钥',
         "from":'en',
         "to":'zh',
-        "appid":'201911060003536350',
+        "appid":'你的appid',
         "salt":'135798642',
         "sign":''
     }
