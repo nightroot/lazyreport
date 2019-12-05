@@ -384,6 +384,7 @@ def auto():# 自动化目录生成报告
         excelreport(auroranames[0][5:-15])
     except:
         excelreport(nessusnames[0])
+        
     if len(auroranames)==0 and len(nessusnames)==0:
         print('\n\n=========================没有发现漏洞文件=========================')
     else:
