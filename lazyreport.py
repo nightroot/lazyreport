@@ -7,6 +7,15 @@ vuldata=[]# 漏洞信息缓存
 auroranames=[] #极光自动化文件名缓存
 nessusnames=[] #nessus自动话文件名缓存
 
+# config 配置项
+# 腾讯翻译api配置
+tencent_secret_id = "你的腾讯翻译api_id"
+tencent_secret_key = "你的腾讯翻译api_key"
+# 百度翻译api配置
+baidu_appid="你的百度翻译api_id"
+baidu_key="你的百度翻译api_key"
+
+
 def md5(str): #md5 散列
     m = hashlib.md5()
     m.update(str.encode("utf8"))
@@ -22,9 +31,6 @@ def tencent_translation(englishtext):  #英翻汉翻译 腾讯每月500w免费�
         "Target":'zh',
     }
     payload['SourceText']=englishtext # 传入查询文本
-    secret_id = "你的id"
-    secret_key = "你的密钥key"
-
     service = "tmt" #文本翻译url服务
     host = "tmt.tencentcloudapi.com" #文本翻译url请求地址
     endpoint = "https://" + host
@@ -60,13 +66,13 @@ def tencent_translation(englishtext):  #英翻汉翻译 腾讯每月500w免费�
     # 计算签名摘要函数
     def sign(key, msg):
         return hmac.new(key, msg.encode("utf-8"), hashlib.sha256).digest()
-    secret_date = sign(("TC3" + secret_key).encode("utf-8"), date)
+    secret_date = sign(("TC3" + tencent_secret_key).encode("utf-8"), date)
     secret_service = sign(secret_date, service)
     secret_signing = sign(secret_service, "tc3_request")
     signature = hmac.new(secret_signing, string_to_sign.encode("utf-8"), hashlib.sha256).hexdigest()
     # ************* 步骤 4：拼接 Authorization *************
     authorization = (algorithm + " " +
-                    "Credential=" + secret_id + "/" + credential_scope + ", " +
+                    "Credential=" + tencent_secret_id + "/" + credential_scope + ", " +
                     "SignedHeaders=" + signed_headers + ", " +
                     "Signature=" + signature)
     headers={
@@ -78,9 +84,9 @@ def tencent_translation(englishtext):  #英翻汉翻译 腾讯每月500w免费�
         "X-TC-Version":version,
         "X-TC-Region":region
     }
-    html=requests.post(url=endpoint,data=payload,headers=headers)
-    time.sleep(0.3)
     try:
+        html=requests.post(url=endpoint,data=payload,headers=headers)
+        time.sleep(0.3)
         return html.json()['Response']['TargetText']
     except:
         return False
@@ -89,18 +95,18 @@ def baidu_translation(englishtext): #英翻汉翻译 百度每月200w免费翻�
     translateurl='http://api.fanyi.baidu.com/api/trans/vip/translate' #通用翻译url请求地址
     payload={
         "q":'',
-        "key":'你的密钥',
+        "key":baidu_key,
         "from":'en',
         "to":'zh',
-        "appid":'你的appid',
+        "appid":baidu_appid,
         "salt":'135798642',
         "sign":''
     }
     payload['q']=englishtext #查询译文    
     payload['sign']=md5(payload['appid']+payload['q']+payload['salt']+payload['key'])# md5(appid+q+salt+密钥)
-    html=requests.get(url=translateurl,params=payload)
-    time.sleep(1) # 接口限制 ，一秒钟只能访问一次
     try:
+        html=requests.get(url=translateurl,params=payload)
+        time.sleep(1) # 接口限制 ，一秒钟只能访问一次
         return html.json()['trans_result'][0]['dst']
     except:
         return False
@@ -181,6 +187,17 @@ def getaurora(initname): # 综述模板、主机模板均要勾选 得到绿盟�
     vulnames=html.xpath('//*[@id="vuln_distribution"]/tbody/tr/td[2]/span/text()')#漏洞名
     descripts=html.xpath('//*[@id="vuln_distribution"]/tbody/tr/td[1]/table/tr[2]/td/text()') #描述
     solves=html.xpath('//*[@id="vuln_distribution"]/tbody/tr/td[1]/table/tr[3]/td/text()') #解决
+    
+    weakpwd=html.xpath('//*[@id="content"]/div[12]/div[2]/table/tr')
+    if(len(weakpwd)!=0):
+        print('存在脆弱账号信息！')
+        for i in range(2,len(weakpwd)+1):
+            td1=html.xpath('//*[@id="content"]/div[12]/div[2]/table/tr['+str(i)+']/td[1]/a/text()')[0]
+            td2=html.xpath('//*[@id="content"]/div[12]/div[2]/table/tr['+str(i)+']/td[2]/text()')[0]
+            td3=html.xpath('//*[@id="content"]/div[12]/div[2]/table/tr['+str(i)+']/td[3]/text()')[0].strip()    
+            td4=html.xpath('//*[@id="content"]/div[12]/div[2]/table/tr['+str(i)+']/td[4]/text()')[0]
+            vuldata.append(["高危",td4+"服务存在脆弱账号",td1,"00000","账号密码："+td2+'/'+td3,"建议修改为符合强密码策略的密码,若非必要则禁用该账户！"])
+    
     for i in range(len(levels)):
         print('收集漏洞信息：'+vulnames[i])
         serials=i+1
@@ -384,7 +401,6 @@ def auto():# 自动化目录生成报告
         excelreport(auroranames[0][5:-15])
     except:
         excelreport(nessusnames[0])
-        
     if len(auroranames)==0 and len(nessusnames)==0:
         print('\n\n=========================没有发现漏洞文件=========================')
     else:
